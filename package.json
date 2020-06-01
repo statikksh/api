@@ -7,6 +7,9 @@
         "lint:fix": "yarn lint --fix",
         "test": "jest"
     },
+    "dependencies": {
+        "fastify": "^2.14.1"
+    },
     "devDependencies": {
         "@commitlint/cli": "^8.3.5",
         "@commitlint/config-conventional": "^8.3.4",
