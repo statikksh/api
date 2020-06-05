@@ -6,7 +6,8 @@
         "rootDir": "src",
         "outDir": "dist",
         "esModuleInterop": true,
-        "strict": true
+        "strict": true,
+        "typeRoots": ["node_modules/@types", "src/types"]
     },
     "exclude": ["node_modules", "dist", "__tests__"]
 }
