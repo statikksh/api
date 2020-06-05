@@ -1,8 +1,13 @@
 import createApplication from './main'
 
+import { PrismaClient } from '@prisma/client'
+
 import { APP_PORT } from './utils/environment'
 
-const application = createApplication()
+const prisma = new PrismaClient()
+const application = createApplication({
+    database: prisma
+})
 
 application.listen(APP_PORT, (error: Error, address: string) => {
     if (!error) {
