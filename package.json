@@ -8,7 +8,9 @@
     },
     "dependencies": {
         "@prisma/client": "^2.0.0-beta.7",
-        "fastify": "^2.14.1"
+        "fastify": "^2.14.1",
+        "fastify-jwt": "^1.4.0",
+        "fastify-plugin": "^1.6.1"
     },
     "devDependencies": {
         "@commitlint/cli": "^8.3.5",
