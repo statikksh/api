@@ -4,6 +4,8 @@ import { PrismaClient } from '@prisma/client'
 
 import authenticationPlugin from './plugins/authentication'
 
+import routes from './routes'
+
 /**
  * Creates the web application.
  */
@@ -13,6 +15,8 @@ export default function createApplication({ database }: ApplicationSources) {
     application.decorate('database', database)
 
     application.register(authenticationPlugin) // JWT authentication plugin
+
+    application.register(routes)
 
     return application
 }
