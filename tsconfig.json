@@ -9,5 +9,5 @@
         "strict": true,
         "typeRoots": ["node_modules/@types", "src/types"]
     },
-    "exclude": ["node_modules", "dist", "__tests__"]
+    "exclude": ["node_modules", "dist"]
 }
