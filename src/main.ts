@@ -13,6 +13,7 @@ export default function createApplication({ database }: ApplicationSources) {
     const application = fastify()
 
     application.decorate('database', database)
+    application.decorateRequest('database', database)
 
     application.register(authenticationPlugin) // JWT authentication plugin
 
