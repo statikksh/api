@@ -31,7 +31,7 @@ const storeShorthand: RouteShorthandOptions = {
 }
 
 /**
- * GET /register
+ * POST /register
  *
  * Creates a new user inside the database.
  *
