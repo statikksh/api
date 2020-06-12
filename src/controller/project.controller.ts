@@ -1,7 +1,7 @@
 import { FastifyInstance, RouteShorthandOptions, FastifyRequest, FastifyReply } from 'fastify'
+import { ServerResponse } from 'http'
 
 import fluentSchema from 'fluent-schema'
-import { ServerResponse } from 'http'
 
 /**
  * Shorthand for PUT /projects.
