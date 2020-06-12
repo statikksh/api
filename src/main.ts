@@ -3,6 +3,7 @@ import fastify from 'fastify'
 import { PrismaClient } from '@prisma/client'
 
 import authenticationPlugin from './plugins/authentication'
+import handleNotFound from './plugins/not-found.handler'
 
 import routes from './routes'
 
@@ -14,6 +15,8 @@ export default function createApplication({ database }: ApplicationSources) {
 
     application.decorate('database', database)
     application.decorateRequest('database', database)
+
+    application.setNotFoundHandler(handleNotFound)
 
     application.register(authenticationPlugin) // JWT authentication plugin
 
