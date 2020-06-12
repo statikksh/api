@@ -5,6 +5,41 @@ import fluentSchema from 'fluent-schema'
 import bcrypt from '../utils/bcrypt'
 
 /**
+ * Shorthand for GET /me
+ */
+const showShorthand: RouteShorthandOptions = {
+    config: {
+        verifyJWT: true
+    }
+}
+
+/**
+ * GET /me
+ *
+ * Shows the profile of the authenticated user.
+ *
+ * [Status Code]
+ * 200 OK        => Information available in the response body.
+ * 404 Not Found => User profile not found.
+ *
+ * [Request Headers]
+ * Authorization: Bearer <user token> (required)
+ *
+ * [Response Body]
+ * 200 OK = { id: number, name: string, email: string }
+ * 404 Not Found => { message: "Resource not found." } (Error)
+ */
+async function show(request: FastifyRequest, reply: FastifyReply<ServerResponse>) {
+    const userId = (request.user as { sub: number }).sub
+    const user = await request.database.user.findOne({
+        where: { id: userId },
+        select: { id: true, name: true, email: true }
+    })
+
+    return user || reply.callNotFound()
+}
+
+/**
  * Shorthand for POST /register
  */
 const storeShorthand: RouteShorthandOptions = {
@@ -84,7 +119,7 @@ async function store(request: FastifyRequest, reply: FastifyReply<ServerResponse
  * Setups the user controller.
  */
 function setup(fastify: FastifyInstance) {
-    fastify.get('/user', async () => ({}))
+    fastify.get('/me', showShorthand, show)
     fastify.post('/register', storeShorthand, store)
 }
 
