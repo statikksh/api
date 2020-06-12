@@ -19,5 +19,5 @@ model Project {
     name       String @unique
     repository String
     ownerId    Int
-    owner      User @relation(fields: [ownerId], references: [id])
+    owner      User   @relation(fields: [ownerId], references: [id])
 }
