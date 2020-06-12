@@ -33,22 +33,23 @@ const storeShorthand: RouteShorthandOptions = {
 /**
  * POST /register
  *
- * Creates a new user inside the database.
+ * Stores a new user inside the database.
  *
- * [Status Reponse]
- *
- * - 200 (OK) returns a JWT token at `token`.
- * - 400 (Bad Request) is returned if with passwords don't match.
- * - 409 (Conflict) when the user is already registered inside the database.
- *
- * [Response Body]
- * 200 { token: string }
+ * [Status Codes]
+ * 200 OK          - User successfully registered, JWT token is present at `token`.
+ * 400 Bad Request - The passwords `password` and `confirm_password` do not match.
+ * 409 Conflict    - The user is already registered inside the database.
  *
  * [Request Body]
- * name: string
- * email: string
- * password: string
- * confirm_password: string
+ * name:             string (required)
+ * email:            string (required)
+ * password:         string (required, length > 6)
+ * confirm_password: string (required, same as `password`)
+ *
+ * [Response Body]
+ * 200 OK          => { token: string }
+ * 400 Bad Request => { message: "Passwords don't match" } (Error)
+ * 409 Conflict    => { message: "User already registered." } (Error)
  */
 async function store(request: FastifyRequest, reply: FastifyReply<ServerResponse>) {
     const { name, email, password, confirm_password }: Record<string, string> = request.body
