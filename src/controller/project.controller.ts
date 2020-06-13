@@ -3,6 +3,9 @@ import { ServerResponse } from 'http'
 
 import fluentSchema from 'fluent-schema'
 
+// Regex from https://github.com/jonschlinkert/is-git-url/blob/master/index.js
+const IS_GIT_URL = /(?:git|ssh|https?|git@[-\w.]+):(\/\/)?(.*?)(\.git)(\/?|\#[-\d\w._]+?)$/
+
 /**
  * Shorthand for DELETE /project/:id.
  */
@@ -72,9 +75,6 @@ const storeShorthand: RouteShorthandOptions = {
     }
 }
 
-// Regex from https://github.com/jonschlinkert/is-git-url/blob/master/index.js
-const IS_GIT_URL = /(?:git|ssh|https?|git@[-\w.]+):(\/\/)?(.*?)(\.git)(\/?|\#[-\d\w._]+?)$/
-
 /**
  * PUT /projects
  *
@@ -140,10 +140,77 @@ async function store(request: FastifyRequest, reply: FastifyReply<ServerResponse
 }
 
 /**
+ * Shorthand for PATCH /project/:id.
+ */
+const updateShorthand: RouteShorthandOptions = {
+    config: { verifyJWT: true },
+    schema: {
+        body: fluentSchema
+            .object()
+            .prop('name', fluentSchema.string())
+            .prop('repository', fluentSchema.string())
+    }
+}
+
+/**
+ * PATCH /project/:id
+ *
+ * Rename a project or change the git repository url.
+ *
+ * [Request Body]
+ * name:       string (optional)
+ * repository: string (optional, must be a valid git repository url)
+ *
+ * [Status Code]
+ * 200 OK           - Project has been updated.
+ * 400 Bad Request  - The field `repository` is not a valid git repository url.
+ * 401 Unauthorized - User behind JWT is not allowed to update the project.
+ * 404 Not Found    - Project not found inside database.
+ *
+ * [Response Body]
+ * 200 OK           => { id: string, name: string, repository: string, ... } (Updated Project)
+ * 400 Bad Request  => { message: "The field `repository` must be a valid git repository URL." } (Error)
+ * 401 Unauthorized => { message: "You're not allowed to update this project." } (Error)
+ * 404 Not Found    => { message: "Resource not found." } (Error)
+ */
+async function update(request: FastifyRequest, reply: FastifyReply<ServerResponse>) {
+    const projectId = request.params.id
+    const project = await request.database.project.findOne({ where: { id: projectId } })
+
+    if (!project) return reply.callNotFound()
+    if (project.ownerId !== (request.user as { sub: number }).sub) {
+        reply.status(401)
+        throw new Error("You're not allowed to update this project.")
+    }
+
+    const { name, repository }: Record<string, string> = request.body
+    const updatedProjectData: Record<string, string> = {}
+
+    if (name) updatedProjectData.name = name
+    if (repository) {
+        if (!IS_GIT_URL.test(repository)) {
+            reply.status(400)
+            throw new Error('The field `repository` must be a valid git repository URL.')
+        }
+
+        updatedProjectData.repository = repository
+    }
+
+    const updatedProject = await request.database.project.update({
+        where: { id: project.id },
+        data: updatedProjectData
+    })
+
+    return updatedProject
+}
+
+/**
  * Setups the project controller.
  */
 function setup(fastify: FastifyInstance) {
+    fastify.patch('/project/:id', updateShorthand, update)
     fastify.delete('/project/:id', removeShorthand, remove)
+
     fastify.put('/projects', storeShorthand, store)
 }
 
