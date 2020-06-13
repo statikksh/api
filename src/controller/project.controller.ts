@@ -4,6 +4,62 @@ import { ServerResponse } from 'http'
 import fluentSchema from 'fluent-schema'
 
 /**
+ * Shorthand for DELETE /project/:id.
+ */
+const removeShorthand: RouteShorthandOptions = {
+    config: { verifyJWT: true },
+    schema: {
+        body: fluentSchema.object().prop('name', fluentSchema.string().required())
+    }
+}
+
+/**
+ * DELETE /project/:id
+ *
+ * Deletes a project from the database.
+ *
+ * [Request Body]
+ * name: string (required, must be the same as the project name)
+ *
+ * [Status Code]
+ * 200 OK           - The project has been deleted.
+ * 404 Not Found    - Project not found.
+ * 401 Unauthorized - The user that requested the project delete is not the project owner.
+ * 403 Forbidden    - Given name does not matches with project name.
+ *
+ * [Response Body]
+ * 200 OK           => { success: true }
+ * 404 Not Found    => { message: "Resource not found." } (Error)
+ * 401 Unauthorized => { message: "You're not allowed to delete this project." } (Error)
+ * 403 Forbidden    => { message: "The field `name` must match with the project name." } (Error)
+ */
+async function remove(request: FastifyRequest, reply: FastifyReply<ServerResponse>) {
+    const projectId = request.params.id
+    const project = await request.database.project.findOne({
+        where: { id: projectId }
+    })
+
+    if (!project) return reply.callNotFound()
+
+    if (project.ownerId !== (request.user as { sub: number }).sub) {
+        reply.status(401)
+        throw new Error("You're not allowed to delete this project.")
+    }
+
+    const { name }: Record<string, string> = request.body
+
+    if (project.name === name) {
+        await request.database.project.delete({ where: { id: project.id } })
+        return {
+            success: true
+        }
+    } else {
+        reply.status(403)
+        throw new Error('The field `name` must match with the project name.')
+    }
+}
+
+/**
  * Shorthand for PUT /projects.
  */
 const storeShorthand: RouteShorthandOptions = {
@@ -87,6 +143,7 @@ async function store(request: FastifyRequest, reply: FastifyReply<ServerResponse
  * Setups the project controller.
  */
 function setup(fastify: FastifyInstance) {
+    fastify.delete('/project/:id', removeShorthand, remove)
     fastify.put('/projects', storeShorthand, store)
 }
 
