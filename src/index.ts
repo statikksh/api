@@ -1,3 +1,5 @@
+import 'dotenv/config'
+
 import createApplication from './main'
 
 import { PrismaClient } from '@prisma/client'
