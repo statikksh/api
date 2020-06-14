@@ -7,6 +7,36 @@ import fluentSchema from 'fluent-schema'
 const IS_GIT_URL = /(?:git|ssh|https?|git@[-\w.]+):(\/\/)?(.*?)(\.git)(\/?|\#[-\d\w._]+?)$/
 
 /**
+ * Shorthand for GET /projects.
+ */
+const indexShorthand: RouteShorthandOptions = {
+    config: {
+        verifyJWT: true
+    }
+}
+
+/**
+ * GET /projects
+ *
+ * List all projects of the authenticated user.
+ *
+ * [Status Code]
+ * 200 OK - User project list available at response body.
+ *
+ * [Response Body]
+ * 200 OK => [{ id: string, name: string, repository: string }] (Project)
+ */
+async function index(request: FastifyRequest) {
+    const userId = (request.user as { sub: number }).sub
+    const projects = await request.database.project.findMany({
+        where: { ownerId: userId },
+        select: { id: true, name: true, repository: true }
+    })
+
+    return projects
+}
+
+/**
  * Shorthand for DELETE /project/:id.
  */
 const removeShorthand: RouteShorthandOptions = {
@@ -208,10 +238,11 @@ async function update(request: FastifyRequest, reply: FastifyReply<ServerRespons
  * Setups the project controller.
  */
 function setup(fastify: FastifyInstance) {
+    fastify.get('/projects', indexShorthand, index)
+    fastify.put('/projects', storeShorthand, store)
+
     fastify.patch('/project/:id', updateShorthand, update)
     fastify.delete('/project/:id', removeShorthand, remove)
-
-    fastify.put('/projects', storeShorthand, store)
 }
 
 export default {
