@@ -6,6 +6,7 @@
 
 - :closed_lock_with_key: Users can create an account and authenticate.
 - :card_index_dividers: Authenticated users can list, create, update and delete projects.
+- :hammer_and_wrench: Authenticated users can run builds manually. (*requires [build server](https://github.com/statikksh/builder) and RabbitMQ*)
 
 #### Technologies
 
@@ -19,6 +20,7 @@
 - :hammer_and_wrench: [**Git**](https://git-scm.com/) - Git is a free and open source distributed version control system designed to handle everything from small to very large projects with speed and efficiency. (*Version Control System*)
 - :cat: [**Yarn**](https://classic.yarnpkg.com/en/docs/install) - Fast, reliable, and secure dependency management. (*Package Manager*)
 - :elephant: [**PostgreSQL**](https://postgresql.org) - A object-relational database system that provides reliability and data integrity. (*Database*)
+- :rabbit: [**RabbitMQ**](https://rabbitmq.com/) - RabbitMQ is an open source multi-protocol messaging broker.
 
 ###### Libraries
 
