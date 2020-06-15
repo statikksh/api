@@ -26,8 +26,23 @@ export default fastifyPlugin(async (fastify: FastifyInstance) => {
         durable: true
     })
 
+    /**
+     * Starts a project build.
+     */
+    function buildProject(id: string, repository: string) {
+        return channel.sendToQueue(BUILDS_QUEUE, Buffer.alloc(0), {
+            headers: {
+                action: 'start',
+                'repository-id': id,
+                repository
+            }
+        })
+    }
+
     fastify.decorateRequest('amqp', {
-        builder: {}
+        builder: {
+            buildProject
+        }
     })
 })
 
@@ -38,5 +53,10 @@ export interface StatikkAMQP {
     /**
      * Functions for the builder workers.
      */
-    builder: {}
+    builder: {
+        /**
+         * Queues a project build.
+         */
+        buildProject(id: string, repository: string): boolean
+    }
 }
