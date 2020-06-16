@@ -22,8 +22,8 @@ export default function createApplication({ database }: ApplicationSources) {
     application.setNotFoundHandler(handleNotFound)
 
     application.register(authenticationPlugin) // JWT authentication plugin
-    application.register(amqpPlugin) // Statikk AMQP plugin
     application.register(websocketPlugin) // WebSocket server
+    application.register(amqpPlugin) // Statikk AMQP plugin
 
     application.register(routes)
 

@@ -25,6 +25,15 @@ export default fastifyPlugin(async (fastify: FastifyInstance) => {
                 select: { id: true }
             })
 
+            if (!user) return socket.disconnect(true)
+
+            socket.on('project/join-live-build', async (projectId: string) => {
+                const project = await fastify.database.project.findOne({ where: { id: projectId } })
+                if (!project || project.ownerId !== user.id) return
+
+                socket.join(project.id)
+            })
+
             socket.emit('ready', user)
         } catch (error) {
             socket.disconnect(true)

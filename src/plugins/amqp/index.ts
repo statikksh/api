@@ -2,10 +2,16 @@ import { FastifyInstance } from 'fastify'
 
 import fastifyPlugin from 'fastify-plugin'
 
-import amqp from 'amqplib'
+import amqp, { ConsumeMessage } from 'amqplib'
 
 // The name of the queue for builds.
 const BUILDS_QUEUE = 'builds'
+
+// The name of the queue for builds logs.
+const BUILD_LOGS_QUEUE = 'build-logs'
+
+// The name of the exchange for builds logs.
+const BUILD_LOGS_EXCHANGE = 'statikk.build.logs'
 
 /**
  * The AMQP plugin.
@@ -24,6 +30,19 @@ export default fastifyPlugin(async (fastify: FastifyInstance) => {
 
     await channel.assertQueue(BUILDS_QUEUE, {
         durable: true
+    })
+
+    const buildLogsQueue = await channel.assertQueue(BUILD_LOGS_QUEUE, { durable: false })
+    await channel.bindQueue(buildLogsQueue.queue, BUILD_LOGS_EXCHANGE, '')
+
+    await channel.consume(buildLogsQueue.queue, (message: ConsumeMessage | null) => {
+        if (!message || !message.properties.headers.repository) return
+        channel.ack(message)
+
+        fastify.websocket.in(message.properties.headers.repository).emit('project/live-logs', {
+            project: message.properties.headers.repository,
+            message: message.content
+        })
     })
 
     /**
