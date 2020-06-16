@@ -3,6 +3,7 @@ import fastify from 'fastify'
 import { PrismaClient } from '@prisma/client'
 
 import authenticationPlugin from './plugins/authentication'
+import websocketPlugin from './plugins/websocket'
 import amqpPlugin from './plugins/amqp'
 
 import handleNotFound from './plugins/not-found.handler'
@@ -22,6 +23,7 @@ export default function createApplication({ database }: ApplicationSources) {
 
     application.register(authenticationPlugin) // JWT authentication plugin
     application.register(amqpPlugin) // Statikk AMQP plugin
+    application.register(websocketPlugin) // WebSocket server
 
     application.register(routes)
 
