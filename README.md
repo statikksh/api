@@ -27,9 +27,9 @@
 - :leopard: [**Fastify**](https://fastify.io) - Fast and low overhead web framework, for Node.js. (*HTTP framework*)
 - :floppy_disk: [**Prisma**](https://prisma.io) - Modern DB toolkit to query, migrate and model your database. (*Database ORM*)
 
-##### Running the API server
+#### Getting Started
 
-###### Getting the source
+##### Getting the source
 
 Open your terminal and execute the following command.
 
@@ -37,7 +37,7 @@ Open your terminal and execute the following command.
 $ git clone https://github.com/statikksh/api.git && cd api
 ```
 
-###### Downloading dependencies
+##### Downloading dependencies
 
 Inside the project directory, download project dependencies with **Yarn**.
 
@@ -45,9 +45,11 @@ Inside the project directory, download project dependencies with **Yarn**.
 $ yarn
 ```
 
-###### Setup environment variables
+##### Setup environment variables
 
-Inside `prisma`, create a new `.env` (`prisma/.env`) file.
+###### Prisma environment file
+
+Inside `prisma` directory, create a new `.env` (`prisma/.env`) file and copy the following content to it.
 
 ```ini
 # Environment variables declared in this file are automatically made available to Prisma.
@@ -59,21 +61,32 @@ Inside `prisma`, create a new `.env` (`prisma/.env`) file.
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/statikk?schema=public"
 ```
 
-> Replace `DATABASE_URL` with the URL to your database.
+> :memo: Replace `DATABASE_URL` with the connection URL of your database.
 
-Then, copy `.env.example` (located at project directory) to `.env` and edit all fields as requested.
+###### Project environment file
 
-###### Building the project
+After that, create a new file called `.env` at project root. You can copy all contents from `.env.example` and edit it as you like.
+
+##### Running Migrations
 
 ```sh
-# Generate `@prisma/client` with the following command.
+$ yarn prisma up --experimental
+```
+
+##### Building the project
+
+```sh
+# As the project uses Prisma, a type-safe code generated Database ORM,
+# You need to generate Prisma ORM souces with the following command.
 $ yarn prisma generate
 
-# Then, compile the **TypeScript** source code.
+# Then, compile the TypeScript source code into Node JavaScript.
 $ yarn build
 ```
 
-###### Running the API server
+##### Running the API server
+
+After configuring all steps above, you can start the API server by running the following command inside your terminal.
 
 ```
 $ yarn start 
