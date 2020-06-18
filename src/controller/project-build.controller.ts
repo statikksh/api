@@ -27,7 +27,7 @@ const startShorthand: RouteShorthandOptions = {
  * 404 Not Found    - Project not found.
  *
  * [Response Body]
- * 200 OK           => { id: string, startedAt: number } ()
+ * 200 OK           => { id: string, startedAt: number } (Project Build)
  * 401 Unauthorized => { message: "You're not allowed to run builds of this project." } (Error)
  * 404 Not Found    => { message: "Resource not found." } (Error)
  */
