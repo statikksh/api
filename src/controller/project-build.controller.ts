@@ -4,7 +4,7 @@ import { ServerResponse } from 'http'
 import fluentSchema from 'fluent-schema'
 
 /**
- * Shorthand for POST /builds.
+ * Shorthand for POST /build/start.
  */
 const startShorthand: RouteShorthandOptions = {
     config: { verifyJWT: true },
@@ -14,7 +14,7 @@ const startShorthand: RouteShorthandOptions = {
 }
 
 /**
- * POST /builds
+ * POST /build/start
  *
  * Queues a project build.
  *
@@ -71,7 +71,7 @@ async function serviceUnavailable(_: any, reply: FastifyReply<ServerResponse>) {
 function setup(fastify: FastifyInstance) {
     const buildServiceIsAvailable = fastify.hasRequestDecorator('amqp')
 
-    fastify.post('/builds', startShorthand, buildServiceIsAvailable ? start : serviceUnavailable)
+    fastify.post('/build/start', startShorthand, buildServiceIsAvailable ? start : serviceUnavailable)
 }
 
 export default {
