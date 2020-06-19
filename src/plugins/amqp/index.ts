@@ -58,9 +58,22 @@ export default fastifyPlugin(async (fastify: FastifyInstance) => {
         })
     }
 
+    /**
+     * Stops a running project build.
+     */
+    function stopProjectBuild(id: string) {
+        return channel.sendToQueue(BUILDS_QUEUE, Buffer.alloc(0), {
+            headers: {
+                action: 'stop',
+                'repository-id': id
+            }
+        })
+    }
+
     fastify.decorateRequest('amqp', {
         builder: {
-            buildProject
+            buildProject,
+            stopProjectBuild
         }
     })
 })
@@ -77,5 +90,10 @@ export interface StatikkAMQP {
          * Queues a project build.
          */
         buildProject(id: string, repository: string): boolean
+
+        /**
+         * Stops a running project build.
+         */
+        stopProjectBuild(id: string): boolean
     }
 }
