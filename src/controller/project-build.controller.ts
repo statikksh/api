@@ -24,11 +24,13 @@ const startShorthand: RouteShorthandOptions = {
  * [Status Code]
  * 200 OK           - Project build may start soon.
  * 401 Unauthorized - The user behind the JWT token isn't the project owner.
+ * 403 Forbidden    - The project is already being builded. (projects can have a only build at a time, https://github.com/statikksh/api/issues/4)
  * 404 Not Found    - Project not found.
  *
  * [Response Body]
  * 200 OK           => { id: string, startedAt: number } (Project Build)
  * 401 Unauthorized => { message: "You're not allowed to run builds of this project." } (Error)
+ * 403 Forbidden    => { message: "Build is already in progress." } (Error)
  * 404 Not Found    => { message: "Resource not found." } (Error)
  */
 async function start(request: FastifyRequest, reply: FastifyReply<ServerResponse>) {
@@ -36,13 +38,27 @@ async function start(request: FastifyRequest, reply: FastifyReply<ServerResponse
     const userId = (request.user as { sub: number }).sub
 
     const project = await request.database.project.findOne({
-        where: { id: projectId }
+        where: { id: projectId },
+        select: {
+            id: true,
+            ownerId: true,
+            repository: true,
+            builds: {
+                take: 1,
+                where: { stage: 'RUNNING' }
+            }
+        }
     })
 
     if (!project) return reply.callNotFound()
     if (project.ownerId !== userId) {
         reply.status(401)
         throw new Error("You're not allowed to run builds of this project.")
+    }
+
+    if (project.builds.length > 0) {
+        reply.status(403)
+        throw new Error('Build is already in progress.')
     }
 
     request.amqp.builder.buildProject(project.id, project.repository)
