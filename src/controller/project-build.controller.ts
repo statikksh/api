@@ -4,6 +4,59 @@ import { ServerResponse } from 'http'
 import fluentSchema from 'fluent-schema'
 
 /**
+ * Shorthand for GET  /project/:id/builds.
+ */
+const indexShorthand: RouteShorthandOptions = {
+    config: { verifyJWT: true }
+}
+
+/**
+ * GET /project/:id/builds
+ *
+ * List all builds of a project.
+ *
+ * [Status Code]
+ * 200 OK           - The server replied with all builds of the project, sorted by `startedAt`.
+ * 401 Unauthorized - The user behind the JWT token isn't the project owner.
+ * 404 Not Found    - The given project does not exists.
+ *
+ * [Response Body]
+ * 200 OK           => [{ id: string, startedAt: number }] (Build[])
+ * 401 Unauthorized => { message: "You're not allowed to view builds of this project." } (Error)
+ * 404 Not Found    => { message: "Resource not found." } (Error)
+ */
+async function index(request: FastifyRequest, reply: FastifyReply<ServerResponse>) {
+    const projectId = request.params.project
+    const project = await request.database.project.findOne({
+        where: { id: projectId },
+        select: {
+            ownerId: true,
+            builds: {
+                orderBy: { startedAt: 'desc' },
+                select: {
+                    id: true,
+                    stage: true,
+                    startedAt: true
+                }
+            }
+        }
+    })
+
+    if (!project) return reply.callNotFound()
+
+    const user = await request.database.user.findOne({
+        where: { id: (request.user as { sub: number }).sub }
+    })
+
+    if (!user || user.id !== project.ownerId) {
+        reply.status(401)
+        throw new Error("You're not allowed to view builds of this project.")
+    }
+
+    return project.builds
+}
+
+/**
  * Shorthand for POST /build/start.
  */
 const startShorthand: RouteShorthandOptions = {
@@ -152,6 +205,8 @@ async function serviceUnavailable(_: any, reply: FastifyReply<ServerResponse>) {
  */
 function setup(fastify: FastifyInstance) {
     const buildServiceIsAvailable = fastify.hasRequestDecorator('amqp')
+
+    fastify.get('/project/:id/builds', indexShorthand, index)
 
     fastify.post('/build/start', startShorthand, buildServiceIsAvailable ? start : serviceUnavailable)
     fastify.post('/build/stop', stopShorthand, buildServiceIsAvailable ? stop : serviceUnavailable)
