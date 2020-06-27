@@ -34,6 +34,9 @@ export default fastifyPlugin(async (fastify: FastifyInstance) => {
         durable: true
     })
 
+    await channel.assertExchange(BUILD_LOGS_EXCHANGE, 'fanout')
+    await channel.assertExchange(BUILD_STATUS_EXCHANGE, 'fanout')
+
     const buildLogsQueue = await channel.assertQueue(BUILD_LOGS_QUEUE, { durable: false })
     await channel.bindQueue(buildLogsQueue.queue, BUILD_LOGS_EXCHANGE, '')
 
